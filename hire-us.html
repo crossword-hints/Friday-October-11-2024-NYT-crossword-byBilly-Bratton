@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bluetooth Printer Connection</title>
+</head>
+<body>
+    <h1>Connect to Bluetooth Printer</h1>
+    <button id="connect-button">Connect to Printer</button>
+    <div id="status"></div>
+
+    <script>
+        document.getElementById('connect-button').addEventListener('click', async () => {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = 'Connecting...';
+
+            try {
+                // Request Bluetooth device
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'YourPrinterName' }], // Adjust the filter for your printer
+                    optionalServices: ['battery_service'] // Include optional services if needed
+                });
+
+                // Connect to the GATT server
+                const server = await device.gatt.connect();
+                statusDiv.textContent = 'Connected to ' + device.name;
+
+                // Optionally get services and characteristics
+                const service = await server.getPrimaryService('battery_service'); // Replace with your printer's service
+                const characteristic = await service.getCharacteristic('battery_level'); // Replace with your printer's characteristic
+                const value = await characteristic.readValue();
+                console.log('Battery Level:', value.getUint8(0)); // Example usage
+
+            } catch (error) {
+                console.error('Connection failed:', error);
+                statusDiv.textContent = 'Connection failed: ' + error;
+            }
+        });
+    </script>
+</body>
+</html>
